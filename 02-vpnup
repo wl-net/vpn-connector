@@ -2,39 +2,49 @@
 
 #######################################
 # WLNet VPN Connector Tool
-# Last Updated: 2012-12-20
+# Last Updated: 2012-12-28
 #######################################
 
-# The network providing the same resources as the VPN.
-PRIVATE_NETWORK_UUID='030b4744-9fb2-4af9-abae-baf0ebe8d745'
 
-LOW_SECURITY_VPN_NAME='WLNet Networks (Tacoma)'
-MAX_SECURITY_VPN_NAME='WLNet Networks (Tacoma) [Secure]'
+# The network providing the same resources as the VPN.
+PRIVATE_NETWORK_UUID=''
+GOOD_SECURITY_NETWORK_UUID=''
+
+# --- The VPN networks to connect to. ---
+
+# The VPN that only provides access to local resources.
+LOW_SECURITY_VPN_UUID=''
+# The VPN that redirects all traffic
+MAX_SECURITY_VPN_UUID=''
+
+INTERFACE=$1
+OPERATION=$2
 
 # Prevent recursive VPN connections.
-if [ $2 = 'vpn-up' ]; then 
+if [ $OPERATION = 'vpn-up' -o $OPERATION = 'vpn-down' ]; then 
     exit 0
 fi
 
-if [ $(nmcli con status | grep $PRIVATE_NETWORK_UUID -c) -eq 1 ]; then
+if [ $(nmcli con status | grep "$PRIVATE_NETWORK_UUID" -c) -eq 1 ]; then
     echo "Connected to WLNet network, VPN not needed"
     exit 0
 fi
 
-if [ $(nmcli con status | grep 'p1p1       ' -c) -ne 0 ]; then
-    if [ $(nmcli con status | egrep "${LOW_SECURITY_VPN_NAME}") ]; then
+if [ $(nmcli con status | grep "$GOOD_SECURITY_NETWORK_UUID" -c) -ne 0 -a $(nm-tool | grep "802.11 WiFi" -A 2 | grep "State" | awk '{print $2}' | egrep '^connected' -c) -eq 0 ]; then
+    # We are connected to a wired network.
+    if [ $(nmcli con status | grep "${LOW_SECURITY_VPN_UUID}" -c) -eq 0 ]; then
+        echo "Connecting to low security VPN"
+        nmcli con up uuid "${LOW_SECURITY_VPN_UUID}"
         exit 0
     fi
-
-    echo "Connecting to low security VPN"
-    nmcli con up id "${LOW_SECURITY_VPN_NAME}"
-    exit 0
 fi
 
-if [ $(nmcli con status | grep "${MAX_SECURITY_VPN_NAME}") ]; then
+# We are connected to a wireless network. Connect to the VPN if not alreay connected.
+if [ $(nmcli con status | grep "${MAX_SECURITY_VPN_UUID}" -c) -eq 1 ]; then
     exit 0
 fi
 
 echo "Connecting to high security VPN"
-nmcli con up id "${MAX_SECURITY_VPN_NAME}"
-exit
+nmcli con up uuid "${MAX_SECURITY_VPN_UUID}"
+
+exit 0
