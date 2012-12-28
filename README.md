@@ -27,7 +27,15 @@ To undo the installation:
 Configuration
 ------------
 
+Create two VPN configurations in network manager.
 
+The first one should be your "max security" VPN that will redirect all traffic over the VPN (this will be used on wireless networks)
+The other configuration should be your "low security" VPN that will only allow access to your VPN's local resources.
+
+Now run `nmcli con` to see the UUIDs of the connections. Edit the script to add these values.
+
+Now fill in the PRIVATE_NETWORK_UUID with the UUID of your home network (this will prevent unneeded use of your VPN).
+Finally, fill in GOOD_SECURITY_NETWORK_UUID with the UUID of your network interface (this is the network where the VPN is used in low security mode).
 
 Usage
 -----
