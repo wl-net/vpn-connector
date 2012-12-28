@@ -1,12 +1,14 @@
-vpn-connector
+WLNet VPN Connector
 =============
 
-Connects to a VPN on certain conditions.
+Automatically connects to a selected VPN on a given connection.
+
+Depends on the installation of NetworkManager (including nmcli) and VPN configuration in NetworkManager.
 
 Installation:
 ------------
 
-Run as root:
+To install the script:
 
     # make install
 
