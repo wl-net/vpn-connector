@@ -11,8 +11,10 @@ There are three states this script will handle with:
 
 Depends on the installation of NetworkManager (including nmcli) and VPN configuration in NetworkManager.
 
-Installation:
+Installation
 ------------
+
+The provided Makefile depends on GNU `make`. If you do not wish to install gnu `make`, then you must copy the 02-vpnup script to /etc/NetworkManager/dispatcher.d/ and set 775 permissions on it.
 
 To install the script:
 
