@@ -2,7 +2,7 @@
 
 #######################################
 # WLNet VPN Connector Tool
-# Last Updated: 2012-12-28
+# Last Updated: 2013-01-23
 #######################################
 
 
@@ -25,13 +25,23 @@ if [ $OPERATION = 'vpn-up' -o $OPERATION = 'vpn-down' ]; then
     exit 0
 fi
 
+if [ $OPERATION = 'down' -a $(nmcli con status | grep "$GOOD_SECURITY_NETWORK_UUID" -c) -eq 0 ]; then
+    nmcli nm wifi on
+fi
+
 if [ $(nmcli con status | grep "$PRIVATE_NETWORK_UUID" -c) -eq 1 ]; then
-    echo "Connected to WLNet network, VPN not needed"
+    echo "Connected to private network, VPN not needed"
+    nmcli nm wifi off
+    nmcli con down uuid "${MAX_SECURITY_VPN_UUID}"
+    nmcli con down uuid "${LOW_SECURITY_VPN_UUID}"
     exit 0
 fi
 
-if [ $(nmcli con status | grep "$GOOD_SECURITY_NETWORK_UUID" -c) -ne 0 -a $(nm-tool | grep "802.11 WiFi" -A 2 | grep "State" | awk '{print $2}' | egrep '^connected' -c) -eq 0 ]; then
+if [ $(nmcli con status | grep "$GOOD_SECURITY_NETWORK_UUID" -c) -ne 0 ]; then
+    echo "On wired network"
     # We are connected to a wired network.
+    nmcli nm wifi off
+
     if [ $(nmcli con status | grep "${LOW_SECURITY_VPN_UUID}" -c) -eq 0 ]; then
         echo "Connecting to low security VPN"
         nmcli con up uuid "${LOW_SECURITY_VPN_UUID}"
